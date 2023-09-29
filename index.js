@@ -4,7 +4,7 @@ const port = 3000;
 
 app.use( express.json() );
 
-// Inicia los routers para cada routes
+// Inicia los routers para cada una de las rutas API
 	app.use('/users', require('./routers/users'));
 	app.use('/friends', require('./routers/friends'));
 	app.use('/stories', require('./routers/stories'));
@@ -19,7 +19,7 @@ app.use((err, req, res, next) => {
     res.status(500).send('Hubo un error en el servidor.');
 });
 
-  
+
 // Ruta de prueba
 app.get('/', (req, resp) => {
     resp.send('Hola mundo');

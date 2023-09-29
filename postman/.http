@@ -1,0 +1,8 @@
+GET http://127.0.0.1:3000/users/list
+
+### SELFT
+GET http://127.0.0.1:3000/users/self
+
+### :ID
+GET http://127.0.0.1:3000/users/1
+

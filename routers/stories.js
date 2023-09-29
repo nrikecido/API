@@ -2,25 +2,48 @@
 const express = require('express');
 const router = express.Router();
 const DB = require('../config/db');
+const authtoken = require('../config/authtoken');
+
 
 // Ver todas las historias
-router.get('/list', async (req, resp) => {
-
-    const result = await DB.select(['userID', 'content', 'created'])
-	.from('stories');
-
-	resp.json({status: true, data: result});
-
+router.get('/list', [authtoken], async (req, resp) => {
+	try {
+	  const myID = req.user.ID;
+		console.log(myID);
+	  // Consulta para obtener las historias de tus amigos cuya amistad ha sido aceptada
+	  const result = await DB.select(['stories.userID', 'stories.content', 'stories.created'])
+		.from('stories')
+		.join('friends', function () {
+			this.on(function () {
+			this.on('stories.userID', '=', 'friends.sendFriend')
+				.orOn('stories.userID', '=', 'friends.acceptFriend');
+			});
+		})
+		.where('friends.accepted', true)
+		.andWhere(function () {
+			this.where('friends.acceptFriend', myID)
+			.orWhere('friends.sendFriend', myID);
+		})
+		.andWhereNot('stories.userID', myID); 
+  
+	  resp.json({ status: true, data: result });
+	} catch (error) {
+	  console.error(error);
+	  resp.status(500).json({ status: false, message: 'Error en el servidor.' });
+	}
 });
 
-// Ver historias de un amigo en concreto (hay que repasar este)
-router.get('/friends/:id', async (req, resp) => {
 
-    const result = await DB.select(['ID', 'content'])
+// Ver historias de un amigo en concreto (hay que repasar este)
+router.get('/friends/:id', [authtoken], async (req, resp) => {
+
+	const myID = req.user.ID;
+	const friendID = req.params.id;
+
+    const result = await DB.select(['userID', 'content', 'created'])
 	.from('stories')
-	.join('friends')
-	.where('userID', req.params.id)
-	.andWhere('friends.accepted', 1)
+	.where('userID', friendID)
+	.andWhere('')
 
 	resp.json({status: true, data: result});
 });
